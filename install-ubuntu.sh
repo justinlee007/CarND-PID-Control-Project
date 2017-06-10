@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 sudo apt-get update
 sudo apt-get install git libuv1-dev libssl-dev gcc g++ cmake make
 git clone https://github.com/uWebSockets/uWebSockets 
