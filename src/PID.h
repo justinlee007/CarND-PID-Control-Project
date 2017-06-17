@@ -33,7 +33,7 @@ class PID {
 
   /**
    * Update the PID error variables given cross track error.
-   * @param cte
+   * @param cte Crosstrack error
    */
   void UpdateError(double cte);
 

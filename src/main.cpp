@@ -1,8 +1,6 @@
 #include <uWS/uWS.h>
-#include <iostream>
 #include "json.hpp"
 #include "PID.h"
-#include <math.h>
 
 using namespace std;
 
@@ -35,7 +33,14 @@ int main() {
 
   PID pid;
   // TODO: Initialize the pid variable.
-  pid.Init(0.225, 0.0004, 4);
+
+  // VectorXd Params = VectorXd(5);
+  double Kp = 0.225;
+  double Ki = 0.0004;
+  double Kd = 4;
+  // Params<<Kp,Ki,Kd,.2,4;
+  // twiddle_tune.Init(0.8,100,set_speed,Params);
+  pid.Init(Kp, Ki, Kd);
 
   h.onMessage([&pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
@@ -52,24 +57,36 @@ int main() {
           double speed = stod(j[1]["speed"].get<string>());
           double angle = stod(j[1]["steering_angle"].get<string>());
           double steer_value;
-          /*
-          * TODO: Calcuate steering value here, remember the steering value is
-          * [-1, 1].
-          * NOTE: Feel free to play around with the throttle and speed. Maybe use
-          * another PID controller to control the speed!
-          */
+          double throttle;
 
           pid.UpdateError(cte);
+
           steer_value = pid.TotalError();
 
+          // Use the inverse of the steering value as the throttle, with a max of 100
+          throttle = fmin(1 / fabs(steer_value), 100);
+
+          // Normalize the throttle value to between 0.4 and 1.0
+          // normalized_x = ((ceil - floor) * (x - minimum))/(maximum - minimum) + floor
+          throttle = ((1.0 - 0.4) * throttle) / 100 + 0.4;
+
           // DEBUG
-          cout << "CTE: " << cte << " Steering Value: " << steer_value << endl;
+          printf("CTE: %.4f, Steering Value: %.4f, Throttle: %.4f\n", cte, steer_value, throttle);
+
+//          if (twiddle_tune.countIter()==40){
+//            Params = twiddle_tune.updateparameters();
+//             Kp = Params[0];
+//            Ki = Params[1];
+//            Kd = Params[2];
+//            pid.Init(Kp, Ki, Kd);
+//            twiddle_tune.setCount(0);
+//            cout<<"Max_Speed = "<<max_speed<<endl;
+//          }
 
           json msgJson;
           msgJson["steering_angle"] = steer_value;
-          msgJson["throttle"] = 0.4;
+          msgJson["throttle"] = throttle;
           auto msg = "42[\"steer\"," + msgJson.dump() + "]";
-          cout << msg << endl;
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
         }
       } else {
