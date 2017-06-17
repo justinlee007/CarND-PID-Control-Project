@@ -1,27 +1,20 @@
 #include "Twiddle.h"
 #include <iostream>
-#include <math.h>       /* fabs */
-#include "Eigen/Dense"
-using Eigen::VectorXd;
-
-using namespace std;
 
 Twiddle::Twiddle() {}
 
 Twiddle::~Twiddle() {}
 
-void Twiddle::init(double gamma, double wait_count, double set_speed, VectorXd Params) {
-
-  cout<<"Initializing Filter \n";
-
+void Twiddle::init(double gamma, double wait_count, double set_speed, vector<double> params) {
+  cout << "Initializing Filter \n";
   this->gamma = gamma;
   this->wait_count = wait_count;
   this->set_speed = set_speed;
-  this->Params = Params;
+  this->params_ = params;
 
-  Prev_Params = Params;
+  Prev_Params = params;
 
-  dParams << 0.01,0.0000001,0.01,0.02,0.05;
+//  dParams << 0.01,0.0000001,0.01,0.02,0.05;
   //dParams << 0.0,0.0,0.0,0.0,0.0;
 
   prev_err = 0;
@@ -34,109 +27,82 @@ void Twiddle::savePrevious(double value) {
   prev_err = error;
 }
 
-double Twiddle::countIter(){
+void Twiddle::incrementCount() {
+  count++;
+}
+
+double Twiddle::getCount() {
   count += 1;
   return count;
 }
 
-void Twiddle::setCount(double value){
-  count = value;
+void Twiddle::resetCount() {
+  count = 0;
 }
 
-
-void Twiddle::changeParam(double increase,VectorXd Params){
-
-  this->increase = increase;
-  this->Params = Params;
-  if (increase == 1){
-    Params[param_num] += dParams[param_num];
-  } else{
-    Params[param_num] -= 2*dParams[param_num];
-  }
-
-
-}
-
-
-void Twiddle::calcError(double cte,double speed){
-
+void Twiddle::calcError(double cte, double speed) {
   //cout<<", Prev_err : "<< prev_err;
-
-  error = .05*(set_speed-speed)*(set_speed-speed)/set_speed/set_speed+ cte*cte;
-  error = error + gamma*prev_err;
+  error = .05 * (set_speed - speed) * (set_speed - speed) / set_speed / set_speed + cte * cte;
+  error = error + gamma * prev_err;
   //cout<<"Err : "<<error<<endl;
   prev_err = error;
-
-
 }
 
-VectorXd Twiddle::updateparameters(){
+vector<double> Twiddle::updateParams() {
 
-  cout<<"Kp : "<<Params[0];
-  cout<<",Ki : "<<Params[1];
-  cout<<",Kd : "<<Params[2];
-  cout<<",Ks : "<<Params[3];
-  cout<<",Kst : "<<Params[4];
-  cout<<endl;
+  cout << "Kp : " << params_[0];
+  cout << ",Ki : " << params_[1];
+  cout << ",Kd : " << params_[2];
+  cout << ",Ks : " << params_[3];
+  cout << ",Kst : " << params_[4];
+  cout << endl;
 
-  cout<<"Old_err : "<<old_err;
-  cout<<",error : "<<error;
-  cout<<endl;
-  cout<<"increase : "<<increase;
-  cout<<endl;
+  cout << "Old_err : " << old_err;
+  cout << ",error : " << error;
+  cout << endl;
+  cout << "increase : " << increase;
+  cout << endl;
 
-
-  if (increase == 1){
-    if (old_err >= error){
+  if (increase == 1) {
+    if (old_err >= error) {
       dParams[param_num] *= 1.1;
       old_err = error;
-      param_num = param_num+1;
-      if (param_num==5){
+      param_num++;
+      if (param_num == 5) {
         param_num = 0;
       }
-
-      return Params;
+      return params_;
     } else {
-      Params[param_num] -= 2*dParams[param_num];
+      params_[param_num] -= 2 * dParams[param_num];
       increase = 0;
       old_err = error;
-      param_num = param_num+1;
-      if (param_num==5){
+      param_num++;
+      if (param_num == 5) {
         param_num = 0;
       }
-
-      return Params;
+      return params_;
     }
-
   }
-  if (increase == 0){
-    if (old_err >= error){
+  if (increase == 0) {
+    if (old_err >= error) {
       dParams[param_num] *= 1.1;
       old_err = error;
-      param_num = param_num+1;
-      if (param_num==5){
+      param_num++;
+      if (param_num == 5) {
         param_num = 0;
       }
-
-      return Params;
+      return params_;
     } else {
-
-
-      dParams *= 0.9;
-      Params[param_num] += dParams[param_num];
+//      dParams *= 0.9;
+      params_[param_num] += dParams[param_num];
       increase = 1;
       old_err = error;
-      param_num = param_num+1;
-      if (param_num==5){
+      param_num++;
+      if (param_num == 5) {
         param_num = 0;
       }
-
-      return Params;
-
+      return params_;
     }
-
-
-
   }
-
+  return params_;
 }

@@ -42,7 +42,7 @@ int main() {
   double Kd = 4;
   // Params<<Kp,Ki,Kd,.2,4;
   // twiddle.init(0.8,100,set_speed,Params);
-  pid.Init(Kp, Ki, Kd);
+  pid.init(Kp, Ki, Kd);
 
   h.onMessage([&pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
@@ -61,9 +61,9 @@ int main() {
           double steer_value;
           double throttle;
 
-          pid.UpdateError(cte);
+          pid.updateError(cte);
 
-          steer_value = pid.TotalError();
+          steer_value = pid.totalError();
 
           // Use the inverse of the steering value as the throttle, with a max of 100
           throttle = fmin(1 / fabs(steer_value), 100);
@@ -74,14 +74,14 @@ int main() {
 
           // DEBUG
           printf("CTE: %.4f, Steering Value: %.4f, Throttle: %.4f\n", cte, steer_value, throttle);
-
-//          if (twiddle.countIter()==40){
-//            Params = twiddle.updateparameters();
+          // twiddle.incrementCount();
+//          if (twiddle.getCount()==40){
+//            Params = twiddle.updateParams();
 //             Kp = Params[0];
 //            Ki = Params[1];
 //            Kd = Params[2];
-//            pid.Init(Kp, Ki, Kd);
-//            twiddle_tune.setCount(0);
+//            pid.init(Kp, Ki, Kd);
+//            twiddle_tune.resetCount();
 //            cout<<"Max_Speed = "<<max_speed<<endl;
 //          }
 

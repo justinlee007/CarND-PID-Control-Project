@@ -1,20 +1,12 @@
 #ifndef TWIDDLE_H
 #define TWIDDLE_H
 
-#include "Eigen/Dense"
-using Eigen::VectorXd;
+#include <vector>
+
+using namespace std;
 
 class Twiddle {
  public:
-  /*
-  * Errors
-  */
-
-
-  // Coefficients
-  double Kp;
-  double Ki;
-  double Kd;
 
   double count = 0;
   double gamma = 0;
@@ -24,12 +16,13 @@ class Twiddle {
   double decrease = 0;
   double param_num = 0;
   double prev_err;
-  double old_err =0;
+  double old_err = 0;
   double error;
 
-  VectorXd Params = VectorXd(5);
-  VectorXd Prev_Params = VectorXd(5);
-  VectorXd dParams = VectorXd(5);
+  vector<double> params_ = vector<double>(5);
+  vector<double> Prev_Params = vector<double>(5);
+  vector<double> dParams = vector<double>(5);
+
   /*
   * Constructor
   */
@@ -43,22 +36,19 @@ class Twiddle {
   /*
   * Initialize PID.
   */
-  void init(double gamma, double wait_count, double set_speed, VectorXd Params);
+  void init(double gamma, double wait_count, double set_speed, vector<double> params);
 
-  double countIter();
+  void incrementCount();
 
-  void setCount(double value);
+  double getCount();
 
-  void calcError(double cte,double speed);
+  void resetCount();
+
+  void calcError(double cte, double speed);
 
   void savePrevious(double value);
 
-  void changeParam(double increase,VectorXd Params);
-
-  VectorXd updateparameters();
-
-
+  vector<double> updateParams();
 };
-
 
 #endif /* TWIDDLE_H */

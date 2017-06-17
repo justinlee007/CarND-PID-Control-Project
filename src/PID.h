@@ -25,22 +25,22 @@ class PID {
 
   /**
    * Initialize PID.
-   * @param Kp
-   * @param Ki
-   * @param Kd
+   * @param Kp Proportional - to minimize CTE
+   * @param Ki Integral - to adjust for steering drift
+   * @param Kd Differential - to avoid overshooting
    */
-  void Init(double Kp, double Ki, double Kd);
+  void init(double Kp, double Ki, double Kd);
 
   /**
    * Update the PID error variables given cross track error.
-   * @param cte Crosstrack error
+   * @param cte Cross Track Error
    */
-  void UpdateError(double cte);
+  void updateError(double cte);
 
   /**
    * Calculate the total PID error.
    */
-  double TotalError();
+  double totalError();
 };
 
 #endif /* PID_H */
