@@ -1,108 +1,73 @@
 #include "Twiddle.h"
 #include <iostream>
+#include <cmath>
 
 Twiddle::Twiddle() {}
 
 Twiddle::~Twiddle() {}
 
-void Twiddle::init(double gamma, double wait_count, double set_speed, vector<double> params) {
+void Twiddle::init(vector<double> params) {
   cout << "Initializing Filter \n";
-  this->gamma = gamma;
-  this->wait_count = wait_count;
-  this->set_speed = set_speed;
-  this->params_ = params;
+  params_ = params;
 
-  Prev_Params = params;
+//  paramDeltas_ << 0.01,0.0000001,0.01,0.02,0.05;
+  //paramDeltas_ << 0.0,0.0,0.0,0.0,0.0;
 
-//  dParams << 0.01,0.0000001,0.01,0.02,0.05;
-  //dParams << 0.0,0.0,0.0,0.0,0.0;
+  total_cte_ = 0;
+  count_ = 0;
 
-  prev_err = 0;
-  count = 0;
-  increase = 1;
-  param_num = 0;
+  increase_ = 1;
+  param_num_ = 0;
 }
 
-void Twiddle::savePrevious(double value) {
-  prev_err = error;
+void Twiddle::incrementCount(double cte) {
+  total_cte_ += fabs(cte);
+  count_++;
 }
 
-void Twiddle::incrementCount() {
-  count++;
-}
-
-double Twiddle::getCount() {
-  count += 1;
-  return count;
+int Twiddle::getCount() {
+  return count_;
 }
 
 void Twiddle::resetCount() {
-  count = 0;
-}
-
-void Twiddle::calcError(double cte, double speed) {
-  //cout<<", Prev_err : "<< prev_err;
-  error = .05 * (set_speed - speed) * (set_speed - speed) / set_speed / set_speed + cte * cte;
-  error = error + gamma * prev_err;
-  //cout<<"Err : "<<error<<endl;
-  prev_err = error;
+  count_ = 0;
+  total_cte_ = 0;
 }
 
 vector<double> Twiddle::updateParams() {
 
-  cout << "Kp_ : " << params_[0];
-  cout << ",Ki_ : " << params_[1];
-  cout << ",Kd_ : " << params_[2];
-  cout << ",Ks : " << params_[3];
-  cout << ",Kst : " << params_[4];
-  cout << endl;
+  printf("Kp=%.4f, Ki=%.4f, Kd=%.4f\n", params_[0], params_[1], params_[2]);
 
-  cout << "Old_err : " << old_err;
-  cout << ",error : " << error;
-  cout << endl;
-  cout << "increase : " << increase;
-  cout << endl;
+  curr_cte_ = total_cte_ / fmax(count_, 1);
 
-  if (increase == 1) {
-    if (old_err >= error) {
-      dParams[param_num] *= 1.1;
-      old_err = error;
-      param_num++;
-      if (param_num == 5) {
-        param_num = 0;
-      }
-      return params_;
+  printf("prev_cte_=%.4f, curr_cte_=%.4f, increase_=%s (%i)\n", prev_cte_, curr_cte_, (increase_ ? "true" : "false"), increase_);
+
+  if (increase_ == 1) {
+    if (curr_cte_ < prev_cte_) {
+      prev_cte_ = curr_cte_;
+      paramDeltas_[param_num_] *= 1.1;
     } else {
-      params_[param_num] -= 2 * dParams[param_num];
-      increase = 0;
-      old_err = error;
-      param_num++;
-      if (param_num == 5) {
-        param_num = 0;
-      }
-      return params_;
+      params_[param_num_] -= 2 * paramDeltas_[param_num_];
+      increase_ = 0;
     }
-  }
-  if (increase == 0) {
-    if (old_err >= error) {
-      dParams[param_num] *= 1.1;
-      old_err = error;
-      param_num++;
-      if (param_num == 5) {
-        param_num = 0;
-      }
-      return params_;
+    updateParamNum();
+    return params_;
+  } else {
+    if (curr_cte_ < prev_cte_) {
+      prev_cte_ = curr_cte_;
+      paramDeltas_[param_num_] *= 1.1;
     } else {
-//      dParams *= 0.9;
-      params_[param_num] += dParams[param_num];
-      increase = 1;
-      old_err = error;
-      param_num++;
-      if (param_num == 5) {
-        param_num = 0;
-      }
-      return params_;
+      paramDeltas_[param_num_] *= 0.9;
+      params_[param_num_] += paramDeltas_[param_num_];
     }
+    increase_ = 1;
+    updateParamNum();
+    return params_;
   }
-  return params_;
+}
+
+void Twiddle::updateParamNum() {
+  if (++param_num_ == (params_.size() - 1)) {
+    param_num_ = 0;
+  }
 }

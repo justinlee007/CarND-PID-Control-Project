@@ -8,20 +8,15 @@ using namespace std;
 class Twiddle {
  public:
 
-  double count = 0;
-  double gamma = 0;
-  double wait_count = 100;
-  double set_speed = 0;
-  double increase = 0;
-  double decrease = 0;
-  double param_num = 0;
-  double prev_err;
-  double old_err = 0;
-  double error;
+  int count_ = 0;
+  int param_num_ = 0;
+  bool increase_ = false;
+  double prev_cte_ = 0;
+  double curr_cte_;
+  double total_cte_;
 
   vector<double> params_ = vector<double>(5);
-  vector<double> Prev_Params = vector<double>(5);
-  vector<double> dParams = vector<double>(5);
+  vector<double> paramDeltas_ = vector<double>(5);
 
   /*
   * Constructor
@@ -31,24 +26,40 @@ class Twiddle {
   /*
   * Destructor.
   */
-  virtual ~Twiddle();
+  ~Twiddle();
 
   /*
   * Initialize PID.
   */
-  void init(double gamma, double wait_count, double set_speed, vector<double> params);
+  void init(vector<double> params);
 
-  void incrementCount();
+  /**
+   *
+   * @param cte
+   */
+  void incrementCount(double cte);
 
-  double getCount();
+  /**
+   *
+   * @return
+   */
+  int getCount();
 
+  /**
+   *
+   */
   void resetCount();
 
-  void calcError(double cte, double speed);
-
-  void savePrevious(double value);
-
+  /**
+   *
+   * @return
+   */
   vector<double> updateParams();
+
+  /**
+   *
+   */
+  void updateParamNum();
 };
 
 #endif /* TWIDDLE_H */

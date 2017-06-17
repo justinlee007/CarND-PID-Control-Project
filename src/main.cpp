@@ -1,12 +1,19 @@
 #include <uWS/uWS.h>
 #include "json.hpp"
-#include "PID.h"
+#include "PidController.h"
 #include "Twiddle.h"
 
 using namespace std;
 
 // for convenience
 using json = nlohmann::json;
+
+static const double SPEED_MAX = 100.0;
+static const double SPEED_MIN = 0.0;
+static const double SPEED_CEIL = 1.0;
+static const double SPEED_FLOOR = 0.4;
+
+static const int SAMPLE_SIZE = 20;
 
 // For converting back and forth between radians and degrees.
 constexpr double pi() { return M_PI; }
@@ -32,19 +39,19 @@ string hasData(string s) {
 int main() {
   uWS::Hub h;
 
-  PID pid;
-  Twiddle twiddle;
-  // TODO: Initialize the pid variable.
+  PidController pid;
+  Twiddle myTwiddle;
 
-  // VectorXd Params = VectorXd(5);
   double Kp = 0.225;
   double Ki = 0.0004;
   double Kd = 4;
-  // Params<<Kp_,Ki_,Kd_,.2,4;
-  // twiddle.init(0.8,100,set_speed,Params);
-  pid.init(Kp, Ki, Kd);
 
-  h.onMessage([&pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+  vector<double> params{Kp, Ki, Kd};
+
+  pid.init(Kp, Ki, Kd);
+  myTwiddle.init(params);
+
+  h.onMessage([&pid, &myTwiddle, &params](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
     // The 2 signifies a websocket event
@@ -66,24 +73,21 @@ int main() {
           steer_value = pid.totalError();
 
           // Use the inverse of the steering value as the throttle, with a max of 100
-          throttle = fmin(1 / fabs(steer_value), 100);
+          throttle = fmin(1 / fabs(steer_value), SPEED_MAX);
 
           // Normalize the throttle value to between 0.4 and 1.0
           // normalized_x = ((ceil - floor) * (x - minimum))/(maximum - minimum) + floor
-          throttle = ((1.0 - 0.4) * throttle) / 100 + 0.4;
+          throttle = ((SPEED_CEIL - SPEED_FLOOR) * (throttle - SPEED_MIN)) / (SPEED_MAX - SPEED_MIN) + SPEED_FLOOR;
 
           // DEBUG
-          printf("CTE: %.4f, Steering Value: %.4f, Throttle: %.4f\n", cte, steer_value, throttle);
-          // twiddle.incrementCount();
-//          if (twiddle.getCount()==40){
-//            Params = twiddle.updateParams();
-//             Kp_ = Params[0];
-//            Ki_ = Params[1];
-//            Kd_ = Params[2];
+//          printf("CTE: %.4f, Steering Value: %.4f, Throttle: %.4f\n", cte, steer_value, throttle);
+
+          myTwiddle.incrementCount(cte);
+          if (myTwiddle.getCount() == SAMPLE_SIZE) {
+            params = myTwiddle.updateParams();
+            myTwiddle.resetCount();
 //            pid.init(Kp_, Ki_, Kd_);
-//            twiddle_tune.resetCount();
-//            cout<<"Max_Speed = "<<max_speed<<endl;
-//          }
+          }
 
           json msgJson;
           msgJson["steering_angle"] = steer_value;

@@ -1,7 +1,7 @@
 #ifndef PID_H
 #define PID_H
 
-class PID {
+class PidController {
  public:
   // Errors
   double p_error_;
@@ -16,12 +16,12 @@ class PID {
   /**
    * Constructor
    */
-  PID();
+  PidController();
 
   /**
    * Destructor.
    */
-  virtual ~PID();
+  virtual ~PidController();
 
   /**
    * Initialize PID.
