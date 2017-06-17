@@ -40,7 +40,7 @@ int main() {
   double Kp = 0.225;
   double Ki = 0.0004;
   double Kd = 4;
-  // Params<<Kp,Ki,Kd,.2,4;
+  // Params<<Kp_,Ki_,Kd_,.2,4;
   // twiddle.init(0.8,100,set_speed,Params);
   pid.init(Kp, Ki, Kd);
 
@@ -77,10 +77,10 @@ int main() {
           // twiddle.incrementCount();
 //          if (twiddle.getCount()==40){
 //            Params = twiddle.updateParams();
-//             Kp = Params[0];
-//            Ki = Params[1];
-//            Kd = Params[2];
-//            pid.init(Kp, Ki, Kd);
+//             Kp_ = Params[0];
+//            Ki_ = Params[1];
+//            Kd_ = Params[2];
+//            pid.init(Kp_, Ki_, Kd_);
 //            twiddle_tune.resetCount();
 //            cout<<"Max_Speed = "<<max_speed<<endl;
 //          }

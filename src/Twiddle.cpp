@@ -50,9 +50,9 @@ void Twiddle::calcError(double cte, double speed) {
 
 vector<double> Twiddle::updateParams() {
 
-  cout << "Kp : " << params_[0];
-  cout << ",Ki : " << params_[1];
-  cout << ",Kd : " << params_[2];
+  cout << "Kp_ : " << params_[0];
+  cout << ",Ki_ : " << params_[1];
+  cout << ",Kd_ : " << params_[2];
   cout << ",Ks : " << params_[3];
   cout << ",Kst : " << params_[4];
   cout << endl;
