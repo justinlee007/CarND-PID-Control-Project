@@ -1,6 +1,7 @@
 #include <uWS/uWS.h>
 #include "json.hpp"
 #include "PID.h"
+#include "Twiddle.h"
 
 using namespace std;
 
@@ -32,6 +33,7 @@ int main() {
   uWS::Hub h;
 
   PID pid;
+  Twiddle twiddle;
   // TODO: Initialize the pid variable.
 
   // VectorXd Params = VectorXd(5);
@@ -39,7 +41,7 @@ int main() {
   double Ki = 0.0004;
   double Kd = 4;
   // Params<<Kp,Ki,Kd,.2,4;
-  // twiddle_tune.Init(0.8,100,set_speed,Params);
+  // twiddle.init(0.8,100,set_speed,Params);
   pid.Init(Kp, Ki, Kd);
 
   h.onMessage([&pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
@@ -73,8 +75,8 @@ int main() {
           // DEBUG
           printf("CTE: %.4f, Steering Value: %.4f, Throttle: %.4f\n", cte, steer_value, throttle);
 
-//          if (twiddle_tune.countIter()==40){
-//            Params = twiddle_tune.updateparameters();
+//          if (twiddle.countIter()==40){
+//            Params = twiddle.updateparameters();
 //             Kp = Params[0];
 //            Ki = Params[1];
 //            Kd = Params[2];

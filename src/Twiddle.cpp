@@ -1,4 +1,4 @@
-#include "twiddle.h"
+#include "Twiddle.h"
 #include <iostream>
 #include <math.h>       /* fabs */
 #include "Eigen/Dense"
@@ -6,12 +6,11 @@ using Eigen::VectorXd;
 
 using namespace std;
 
+Twiddle::Twiddle() {}
 
-twiddle::twiddle() {}
+Twiddle::~Twiddle() {}
 
-twiddle::~twiddle() {}
-
-void twiddle::Init(double gamma, double wait_count, double set_speed, VectorXd Params) {
+void Twiddle::init(double gamma, double wait_count, double set_speed, VectorXd Params) {
 
   cout<<"Initializing Filter \n";
 
@@ -31,21 +30,21 @@ void twiddle::Init(double gamma, double wait_count, double set_speed, VectorXd P
   param_num = 0;
 }
 
-void twiddle::savePrevious(double value) {
+void Twiddle::savePrevious(double value) {
   prev_err = error;
 }
 
-double twiddle::countIter(){
+double Twiddle::countIter(){
   count += 1;
   return count;
 }
 
-void twiddle::setCount(double value){
+void Twiddle::setCount(double value){
   count = value;
 }
 
 
-void twiddle::changeParam(double increase,VectorXd Params){
+void Twiddle::changeParam(double increase,VectorXd Params){
 
   this->increase = increase;
   this->Params = Params;
@@ -59,7 +58,7 @@ void twiddle::changeParam(double increase,VectorXd Params){
 }
 
 
-void twiddle::calcError(double cte,double speed){
+void Twiddle::calcError(double cte,double speed){
 
   //cout<<", Prev_err : "<< prev_err;
 
@@ -71,7 +70,7 @@ void twiddle::calcError(double cte,double speed){
 
 }
 
-VectorXd twiddle::updateparameters(){
+VectorXd Twiddle::updateparameters(){
 
   cout<<"Kp : "<<Params[0];
   cout<<",Ki : "<<Params[1];

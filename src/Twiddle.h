@@ -4,16 +4,18 @@
 #include "Eigen/Dense"
 using Eigen::VectorXd;
 
-class twiddle {
+class Twiddle {
  public:
   /*
   * Errors
   */
 
 
-  /*
-  * Coefficients
-  */
+  // Coefficients
+  double Kp;
+  double Ki;
+  double Kd;
+
   double count = 0;
   double gamma = 0;
   double wait_count = 100;
@@ -31,17 +33,17 @@ class twiddle {
   /*
   * Constructor
   */
-  twiddle();
+  Twiddle();
 
   /*
   * Destructor.
   */
-  virtual ~twiddle();
+  virtual ~Twiddle();
 
   /*
   * Initialize PID.
   */
-  void Init(double gamma, double wait_count, double set_speed, VectorXd Params);
+  void init(double gamma, double wait_count, double set_speed, VectorXd Params);
 
   double countIter();
 
