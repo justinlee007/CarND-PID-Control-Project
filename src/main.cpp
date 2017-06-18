@@ -16,10 +16,11 @@ static const double START_KD = 3;
 static const double SPEED_MAX = 100.0;
 static const double SPEED_MIN = 0.0;
 static const double THROTTLE_CEIL = 1.0;
-static const double THROTTLE_FLOOR = 0.45;
+static const double THROTTLE_FLOOR = 0.5;
+static const double THROTTLE_HIGH_CTE = 0.3;
 
 static const int SAMPLE_SIZE = 100;
-static const double MIN_TOLERANCE = 0.01;
+static const double MIN_TOLERANCE = 0.02;
 
 static int count_ = 0;
 static double best_cte_ = 1;
@@ -84,12 +85,18 @@ int main() {
           pid.updateError(cte);
           double steer_value = pid.totalError();
 
-          // Use the inverse of the steering value as the throttle, with a max of 100
-          double throttle = fmin(1 / fabs(steer_value), SPEED_MAX);
+          double throttle;
 
-          // Normalize the throttle value from [0, 100] to [0.45, 1.0]
-          // normalized_x = ((ceil - floor) * (x - minimum))/(maximum - minimum) + floor
-          throttle = ((THROTTLE_CEIL - THROTTLE_FLOOR) * (throttle - SPEED_MIN)) / (SPEED_MAX - SPEED_MIN) + THROTTLE_FLOOR;
+          if (fabs(cte) > 1) {
+            throttle = THROTTLE_HIGH_CTE;
+          } else {
+            // Use the inverse of the steering value as the throttle, with a max of 100
+            throttle = fmin(1 / fabs(steer_value), SPEED_MAX);
+
+            // Normalize the throttle value from [0, 100] to [0.45, 1.0]
+            // normalized_x = ((ceil - floor) * (x - minimum))/(maximum - minimum) + floor
+            throttle = ((THROTTLE_CEIL - THROTTLE_FLOOR) * (throttle - SPEED_MIN)) / (SPEED_MAX - SPEED_MIN) + THROTTLE_FLOOR;
+          }
 
           // Twiddle the parameters until tolerance is met
           if (!achieved_tolerance_) {
