@@ -2,6 +2,7 @@
 #include "json.hpp"
 #include "PidController.h"
 #include "Twiddle.h"
+#include "Tracker.h"
 
 using namespace std;
 
@@ -16,16 +17,14 @@ static const double START_KD = 3;
 static const double SPEED_MAX = 100.0;
 static const double SPEED_MIN = 0.0;
 static const double THROTTLE_CEIL = 1.0;
-static const double THROTTLE_FLOOR = 0.5;
-static const double THROTTLE_HIGH_CTE = 0.3;
+static const double THROTTLE_FLOOR = 0.45;
+
+static const double HIGH_CTE_THRESHOLD = 1.0;
+static const double THROTTLE_HIGH_CTE = 0.25;
 
 static const int SAMPLE_SIZE = 100;
 static const double MIN_TOLERANCE = 0.02;
 
-static int count_ = 0;
-static double best_cte_ = 1;
-static double worst_cte_ = 0;
-static double best_speed_ = 0.0;
 static bool achieved_tolerance_ = false;
 
 // For converting back and forth between radians and degrees.
@@ -54,11 +53,13 @@ int main() {
 
   PidController pid;
   Twiddle twiddle;
+  Tracker tracker;
 
   pid.init(START_KP, START_KI, START_KD);
   twiddle.init(START_KP, START_KI, START_KD);
+  tracker.init(SAMPLE_SIZE);
 
-  h.onMessage([&pid, &twiddle](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+  h.onMessage([&pid, &twiddle, &tracker](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
     // The 2 signifies a websocket event
@@ -73,24 +74,16 @@ int main() {
           double speed = stod(j[1]["speed"].get<string>());
           double angle = stod(j[1]["steering_angle"].get<string>());
 
-          best_cte_ = fmin(fabs(cte), best_cte_);
-          worst_cte_ = fmax(fabs(cte), worst_cte_);
-          best_speed_ = fmax(speed, best_speed_);
-          if (++count_ == SAMPLE_SIZE) {
-            printf("best_cte_=%.5f, worst_cte_=%.5f, best_speed_=%.2f\n", best_cte_, worst_cte_, best_speed_);
-            count_ = 0;
-          }
-
           // Get the steering value from the PID controller
           pid.updateError(cte);
           double steer_value = pid.totalError();
 
           double throttle;
-
-          if (fabs(cte) > 1) {
+          if (fabs(cte) > HIGH_CTE_THRESHOLD) {
+            // Go slow when the cte is high
             throttle = THROTTLE_HIGH_CTE;
           } else {
-            // Use the inverse of the steering value as the throttle, with a max of 100
+            // Otherwise, use the inverse of the steering value as the throttle, with a max of 100
             throttle = fmin(1 / fabs(steer_value), SPEED_MAX);
 
             // Normalize the throttle value from [0, 100] to [0.45, 1.0]
@@ -110,6 +103,8 @@ int main() {
               }
             }
           }
+
+          tracker.onMessageProcessed(cte, speed, throttle);
 
           // DEBUG
           // printf("cte=%.4f, steer_value=%.4f, throttle=%.4f\n", cte, steer_value, throttle);
