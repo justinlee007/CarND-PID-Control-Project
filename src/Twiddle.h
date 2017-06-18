@@ -6,21 +6,23 @@
 using namespace std;
 
 class Twiddle {
+ private:
+
+  int count_;
+  int twiddle_phase_;
+  int param_num_;
+  double total_cte_;
+  double best_cte_;
+  double tolerance_;
+
+  vector<double> params_;
+  vector<double> param_deltas_;
+
  public:
 
-  int count_ = 0;
-  int param_num_ = 0;
-  bool increase_ = false;
-  double prev_cte_ = 0;
-  double curr_cte_;
-  double total_cte_;
-
-  vector<double> params_ = vector<double>(5);
-  vector<double> paramDeltas_ = vector<double>(5);
-
-  /*
-  * Constructor
-  */
+  /**
+   * Constructor.
+   */
   Twiddle();
 
   /*
@@ -28,38 +30,35 @@ class Twiddle {
   */
   ~Twiddle();
 
-  /*
-  * Initialize PID.
-  */
-  void init(vector<double> params);
+  /**
+   * Initialize Twiddle.
+   * @param Kp Proportional - to minimize CTE
+   * @param Ki Integral - to adjust for steering drift
+   * @param Kd Differential - to avoid overshooting
+   */
+  void init(double Kp, double Ki, double Kd);
 
   /**
-   *
-   * @param cte
+   * Increment twiddle count and total cross track error
+   * @param cte Cross Track Error value to sum
    */
   void incrementCount(double cte);
 
   /**
-   *
-   * @return
+   * @return Current twiddle count (gets reset in updateParams())
    */
   int getCount();
 
   /**
-   *
+   * @return Sum of all the parameter deltas
    */
-  void resetCount();
+  double getTolerance();
 
   /**
-   *
-   * @return
+   * Evaluates error (sum(cte) / count) and runs the twiddle algorithm to adjust initial parameter values.
+   * @return vector with updated {Kp, Ki, Kd} values
    */
   vector<double> updateParams();
-
-  /**
-   *
-   */
-  void updateParamNum();
 };
 
 #endif /* TWIDDLE_H */

@@ -12,6 +12,7 @@ PidController::PidController() {}
 PidController::~PidController() {}
 
 void PidController::init(double Kp, double Ki, double Kd) {
+  printf("Kp=%.4f, Ki=%.6f, Kd=%.3f\n", Kp, Ki, Kd);
   Kp_ = Kp;
   Ki_ = Ki;
   Kd_ = Kd;

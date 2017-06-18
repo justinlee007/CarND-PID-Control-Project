@@ -8,12 +8,18 @@ using namespace std;
 // for convenience
 using json = nlohmann::json;
 
+// Starting values taken from lecture
+static const double START_KP = 0.1;
+static const double START_KI = 0.0004;
+static const double START_KD = 2;
+
 static const double SPEED_MAX = 100.0;
 static const double SPEED_MIN = 0.0;
-static const double SPEED_CEIL = 1.0;
-static const double SPEED_FLOOR = 0.4;
+static const double THROTTLE_CEIL = 1.0;
+static const double THROTTLE_FLOOR = 0.45;
 
-static const int SAMPLE_SIZE = 20;
+static const int SAMPLE_SIZE = 100;
+static const double MIN_TOLERANCE = 0.0001;
 
 // For converting back and forth between radians and degrees.
 constexpr double pi() { return M_PI; }
@@ -40,18 +46,13 @@ int main() {
   uWS::Hub h;
 
   PidController pid;
-  Twiddle myTwiddle;
+  Twiddle twiddle;
+  bool achieved_tolerance = false;
 
-  double Kp = 0.225;
-  double Ki = 0.0004;
-  double Kd = 4;
+  pid.init(START_KP, START_KI, START_KD);
+  twiddle.init(START_KP, START_KI, START_KD);
 
-  vector<double> params{Kp, Ki, Kd};
-
-  pid.init(Kp, Ki, Kd);
-  myTwiddle.init(params);
-
-  h.onMessage([&pid, &myTwiddle, &params](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+  h.onMessage([&pid, &twiddle, &achieved_tolerance](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
     // The 2 signifies a websocket event
@@ -65,29 +66,33 @@ int main() {
           double cte = stod(j[1]["cte"].get<string>());
           double speed = stod(j[1]["speed"].get<string>());
           double angle = stod(j[1]["steering_angle"].get<string>());
-          double steer_value;
-          double throttle;
 
+          // Get the steering value from the PID controller
           pid.updateError(cte);
-
-          steer_value = pid.totalError();
+          double steer_value = pid.totalError();
 
           // Use the inverse of the steering value as the throttle, with a max of 100
-          throttle = fmin(1 / fabs(steer_value), SPEED_MAX);
+          double throttle = fmin(1 / fabs(steer_value), SPEED_MAX);
 
-          // Normalize the throttle value to between 0.4 and 1.0
+          // Normalize the throttle value from [0, 100] to [0.45, 1.0]
           // normalized_x = ((ceil - floor) * (x - minimum))/(maximum - minimum) + floor
-          throttle = ((SPEED_CEIL - SPEED_FLOOR) * (throttle - SPEED_MIN)) / (SPEED_MAX - SPEED_MIN) + SPEED_FLOOR;
+          throttle = ((THROTTLE_CEIL - THROTTLE_FLOOR) * (throttle - SPEED_MIN)) / (SPEED_MAX - SPEED_MIN) + THROTTLE_FLOOR;
+
+          // Twiddle the parameters until tolerance is met
+          if (!achieved_tolerance) {
+            twiddle.incrementCount(cte);
+            if (twiddle.getCount() == SAMPLE_SIZE) {
+              vector<double> params = twiddle.updateParams();
+              if (twiddle.getTolerance() < MIN_TOLERANCE) {
+                achieved_tolerance = true;
+              } else {
+                pid.init(params[0], params[1], params[2]);
+              }
+            }
+          }
 
           // DEBUG
-//          printf("CTE: %.4f, Steering Value: %.4f, Throttle: %.4f\n", cte, steer_value, throttle);
-
-          myTwiddle.incrementCount(cte);
-          if (myTwiddle.getCount() == SAMPLE_SIZE) {
-            params = myTwiddle.updateParams();
-            myTwiddle.resetCount();
-//            pid.init(Kp_, Ki_, Kd_);
-          }
+          // printf("cte=%.4f, steer_value=%.4f, throttle=%.4f\n", cte, steer_value, throttle);
 
           json msgJson;
           msgJson["steering_angle"] = steer_value;
