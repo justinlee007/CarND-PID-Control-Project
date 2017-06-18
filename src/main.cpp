@@ -8,10 +8,10 @@ using namespace std;
 // for convenience
 using json = nlohmann::json;
 
-// Starting values taken from lecture
-static const double START_KP = 0.1;
+// Starting values derived from multiple twiddle runs
+static const double START_KP = 0.15;
 static const double START_KI = 0.0004;
-static const double START_KD = 2;
+static const double START_KD = 3;
 
 static const double SPEED_MAX = 100.0;
 static const double SPEED_MIN = 0.0;
@@ -19,7 +19,13 @@ static const double THROTTLE_CEIL = 1.0;
 static const double THROTTLE_FLOOR = 0.45;
 
 static const int SAMPLE_SIZE = 100;
-static const double MIN_TOLERANCE = 0.0001;
+static const double MIN_TOLERANCE = 0.01;
+
+static int count_ = 0;
+static double best_cte_ = 1;
+static double worst_cte_ = 0;
+static double best_speed_ = 0.0;
+static bool achieved_tolerance_ = false;
 
 // For converting back and forth between radians and degrees.
 constexpr double pi() { return M_PI; }
@@ -47,12 +53,11 @@ int main() {
 
   PidController pid;
   Twiddle twiddle;
-  bool achieved_tolerance = false;
 
   pid.init(START_KP, START_KI, START_KD);
   twiddle.init(START_KP, START_KI, START_KD);
 
-  h.onMessage([&pid, &twiddle, &achieved_tolerance](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+  h.onMessage([&pid, &twiddle](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
     // The 2 signifies a websocket event
@@ -67,6 +72,14 @@ int main() {
           double speed = stod(j[1]["speed"].get<string>());
           double angle = stod(j[1]["steering_angle"].get<string>());
 
+          best_cte_ = fmin(fabs(cte), best_cte_);
+          worst_cte_ = fmax(fabs(cte), worst_cte_);
+          best_speed_ = fmax(speed, best_speed_);
+          if (++count_ == SAMPLE_SIZE) {
+            printf("best_cte_=%.5f, worst_cte_=%.5f, best_speed_=%.2f\n", best_cte_, worst_cte_, best_speed_);
+            count_ = 0;
+          }
+
           // Get the steering value from the PID controller
           pid.updateError(cte);
           double steer_value = pid.totalError();
@@ -79,12 +92,12 @@ int main() {
           throttle = ((THROTTLE_CEIL - THROTTLE_FLOOR) * (throttle - SPEED_MIN)) / (SPEED_MAX - SPEED_MIN) + THROTTLE_FLOOR;
 
           // Twiddle the parameters until tolerance is met
-          if (!achieved_tolerance) {
+          if (!achieved_tolerance_) {
             twiddle.incrementCount(cte);
             if (twiddle.getCount() == SAMPLE_SIZE) {
               vector<double> params = twiddle.updateParams();
               if (twiddle.getTolerance() < MIN_TOLERANCE) {
-                achieved_tolerance = true;
+                achieved_tolerance_ = true;
               } else {
                 pid.init(params[0], params[1], params[2]);
               }

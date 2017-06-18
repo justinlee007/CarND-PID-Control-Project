@@ -7,7 +7,6 @@ using namespace std;
 
 class Twiddle {
  private:
-
   int count_;
   int twiddle_phase_;
   int param_num_;
@@ -28,7 +27,7 @@ class Twiddle {
   /*
   * Destructor.
   */
-  ~Twiddle();
+  virtual ~Twiddle();
 
   /**
    * Initialize Twiddle.

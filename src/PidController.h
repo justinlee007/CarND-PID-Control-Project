@@ -2,7 +2,8 @@
 #define PID_H
 
 class PidController {
- public:
+ private:
+
   // Errors
   double p_error_;
   double i_error_;
@@ -12,6 +13,8 @@ class PidController {
   double Kp_;
   double Ki_;
   double Kd_;
+
+ public:
 
   /**
    * Constructor
