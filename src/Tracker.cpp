@@ -9,6 +9,10 @@ void Tracker::init(int sample_size) {
   sample_size_ = sample_size;
 }
 
+double Tracker::getAveTps() {
+  return count_ / difftime(time(NULL), init_time_);;
+}
+
 void Tracker::onMessageProcessed(double cte, double speed, double throttle) {
   best_cte_ = fmin(fabs(cte), best_cte_);
   worst_cte_ = fmax(fabs(cte), worst_cte_);

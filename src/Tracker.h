@@ -25,6 +25,8 @@ class Tracker {
   time_t init_time_;
   double ave_tps_ = 0.0;
 
+  void printTracking();
+
  public:
 
   /**
@@ -39,9 +41,10 @@ class Tracker {
 
   void init(int sample_size);
 
+  double getAveTps();
+
   void onMessageProcessed(double cte, double speed, double throttle);
 
-  void printTracking();
 };
 
 #endif //TRACKER_H

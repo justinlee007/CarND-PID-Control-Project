@@ -25,6 +25,7 @@ static const double THROTTLE_HIGH_CTE = 0.25;
 static const int SAMPLE_SIZE = 100;
 static const double MIN_TOLERANCE = 0.02;
 
+static bool low_tps_ = false;
 static bool achieved_tolerance_ = false;
 
 // For converting back and forth between radians and degrees.
@@ -89,6 +90,10 @@ int main() {
             // Normalize the throttle value from [0, 100] to [0.45, 1.0]
             // normalized_x = ((ceil - floor) * (x - minimum))/(maximum - minimum) + floor
             throttle = ((THROTTLE_CEIL - THROTTLE_FLOOR) * (throttle - SPEED_MIN)) / (SPEED_MAX - SPEED_MIN) + THROTTLE_FLOOR;
+
+            if (low_tps_) {
+              throttle -= 0.2;
+            }
           }
 
           // Twiddle the parameters until tolerance is met
@@ -101,6 +106,7 @@ int main() {
               } else {
                 pid.init(params[0], params[1], params[2]);
               }
+              low_tps_ = (tracker.getAveTps() < 30);
             }
           }
 
