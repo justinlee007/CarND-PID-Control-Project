@@ -2,8 +2,6 @@
 #include <iostream>
 #include <cmath>
 
-using namespace std;
-
 static const double MAX_STEERING_VALUE = 1.0;
 static const double MIN_STEERING_VALUE = -1.0;
 

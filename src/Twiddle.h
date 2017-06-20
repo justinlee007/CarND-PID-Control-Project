@@ -3,8 +3,6 @@
 
 #include <vector>
 
-using namespace std;
-
 class Twiddle {
  private:
   int count_;
@@ -14,8 +12,8 @@ class Twiddle {
   double best_cte_;
   double tolerance_;
 
-  vector<double> params_;
-  vector<double> param_deltas_;
+  std::vector<double> params_;
+  std::vector<double> param_deltas_;
 
  public:
 
@@ -57,7 +55,7 @@ class Twiddle {
    * Evaluates error (sum(cte) / count) and runs the twiddle algorithm to adjust initial parameter values.
    * @return vector with updated {Kp, Ki, Kd} values
    */
-  vector<double> updateParams();
+  std::vector<double> updateParams();
 };
 
 #endif /* TWIDDLE_H */

@@ -9,7 +9,7 @@ void Twiddle::init(double Kp, double Ki, double Kd) {
   params_ = {Kp, Ki, Kd};
   param_deltas_ = {(Kp / 10), (Ki / 10), (Kd / 10)};
   count_ = 0;
-  twiddle_phase_ = 0; // TODO: this should be an enum
+  twiddle_phase_ = 0; // TODO: this should be an enum or use callbacks
   param_num_ = 0;
   total_cte_ = 0.0;
   best_cte_ = 1.0;
@@ -31,7 +31,7 @@ double Twiddle::getTolerance() {
   return tolerance_;
 }
 
-vector<double> Twiddle::updateParams() {
+std::vector<double> Twiddle::updateParams() {
   double curr_cte = total_cte_ / count_;
   count_ = 0;
   total_cte_ = 0;
@@ -65,10 +65,8 @@ vector<double> Twiddle::updateParams() {
     twiddle_phase_ = 0;
     update_params = true;
   }
-  if (update_params) {
-    if (++param_num_ == 3) {
-      param_num_ = 0;
-    }
+  if (update_params && (++param_num_ == 3)) {
+    param_num_ = 0;
   }
   return params_;
 }
