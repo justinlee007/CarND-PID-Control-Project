@@ -21,7 +21,7 @@ static const double HIGH_CTE_THRESHOLD = 1.0;
 static const double THROTTLE_HIGH_CTE = 0.25;
 
 static const int SAMPLE_SIZE = 100;
-static const double MIN_TOLERANCE = 0.02;
+static const double MIN_TOLERANCE = 0.2;
 
 static bool low_tps_ = false;
 static bool achieved_tolerance_ = false;
