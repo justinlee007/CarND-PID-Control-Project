@@ -23,6 +23,10 @@ static const double THROTTLE_HIGH_CTE = 0.25;
 static const int SAMPLE_SIZE = 100;
 static const double MIN_TOLERANCE = 0.2;
 
+static const double LOW_TPS_THRESHOLD = 30;
+static const double LOW_TPS_THROTTLE_OFFSET = 0.2;
+
+static int count_ = 0;
 static bool low_tps_ = false;
 static bool achieved_tolerance_ = false;
 
@@ -89,26 +93,32 @@ int main() {
             // normalized_x = ((ceil - floor) * (x - minimum))/(maximum - minimum) + floor
             throttle = ((THROTTLE_CEIL - THROTTLE_FLOOR) * (throttle - SPEED_MIN)) / (SPEED_MAX - SPEED_MIN) + THROTTLE_FLOOR;
 
+            // Slow down when the tps is low
             if (low_tps_) {
-              throttle -= 0.2;
+              throttle -= LOW_TPS_THROTTLE_OFFSET;
             }
           }
+
+          bool is_sample_period = (++count_ % SAMPLE_SIZE == 0);
 
           // Twiddle the parameters until tolerance is met
           if (!achieved_tolerance_) {
             twiddle.incrementCount(cte);
-            if (twiddle.getCount() == SAMPLE_SIZE) {
+            if (is_sample_period) {
               std::vector<double> params = twiddle.updateParams();
               if (twiddle.getTolerance() < MIN_TOLERANCE) {
                 achieved_tolerance_ = true;
               } else {
                 pid.init(params[0], params[1], params[2]);
               }
-              low_tps_ = (tracker.getAveTps() < 30);
             }
           }
 
           tracker.onMessageProcessed(cte, speed, throttle);
+
+          if (is_sample_period) {
+            low_tps_ = (tracker.getAveTps() < LOW_TPS_THRESHOLD);
+          }
 
           // DEBUG
           // printf("cte=%.4f, steer_value=%.4f, throttle=%.4f\n", cte, steer_value, throttle);
