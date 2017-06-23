@@ -3,7 +3,7 @@
 
 This project implements a PID (Proportional Integral Derivative) controller to use with the Udacity car simulator.  With the PID running, the car will autonomously drive around the track, adjusting the steering based on a given CTE (Cross Track Error) value.
 
-![](https://media.giphy.com/media/eDekmaUadA2ze/giphy.gif)
+![](pid-run.gif)
 
 ## Dependencies
 
