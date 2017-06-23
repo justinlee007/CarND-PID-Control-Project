@@ -33,12 +33,19 @@ This project implements a PID (Proportional Integral Derivative) controller to u
 3. Compile: `cmake .. && make`
 4. Run it: `./pid`. 
 
-## Project Instructions and Rubric
+# Project Goals and [Rubric](https://review.udacity.com/#!/rubrics/824/view)
 
-Note: regardless of the changes you make, your project must be buildable using
-cmake and make!
+The goals of this project are the following:
 
-More information is only accessible by people who are already enrolled in Term 2
-of CarND. If you are enrolled, see [the project page](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/f1820894-8322-4bb3-81aa-b26b3c6dcbaf/lessons/e8235395-22dd-4b87-88e0-d108c5e5bbf4/concepts/6a4d8d42-6a04-4aa6-b284-1697c0fd6562)
-for instructions and the project rubric.
+* The PID controller must be implemented as was taught in the lessons.
+* An implementation of the twiddle algorithm tunes the hyperparameters.
+* The vehicle must successfully drive a lap around the track.
+
+# Implementation of the PID controller
+
+Implementing the PID controller was somewhat trivial because the it was already done in the [lab](https://github.com/justinlee007/CarND-PID-Lab/blob/master/src/python/robot.py#L132) 
+
+# Tuning the hyperparameters
+
+# Other lessons learned
 
