@@ -87,22 +87,32 @@ The fundamental concept of twiddle is to refine input parameters based on an emp
 * Compare the two and chose the one with less error
 
 ![](twiddle.png)
-##### Benefits of a PID controller implementing the twiddle algorithm
+##### Example illustration showing benefits of a PID controller implementing the twiddle algorithm
 
 Some details of the algorithm are as follows:
 ### Parameter Deltas
 
-When twiddle runs in the Udacity car simulator, it updates the PID hyperparameters directly, and has an immediate affect on the car's performance.  Because changing the values too much can result in the car immediately flying off the track, I decided to use the seed PID values to drive parameter deltas.  After much tinkering, I decided that the param deltas would initialize to 10% of the seed value.  So even though the twiddle algorithm tunes hyperparameters to a smaller range, it allows for dynamic updates while the simulator is running. 
+When twiddle runs in the Udacity car simulator, it updates the PID hyperparameters directly, and has an immediate affect on the car's performance.  Because changing the values too much can result in the car immediately flying off the track, I decided to use the seed PID values to drive parameter deltas.  After much tinkering, I decided that the param deltas would initialize to **10%** of the seed value.  So even though the twiddle algorithm tunes hyperparameters to a smaller range, it allows for dynamic updates while the simulator is running. 
+
+```
+Delta P (Proportional) ΔP = 0.225 / 10
+Delta I (Integral) = ΔI = 0.0004 / 10
+Delta D (Differential) ΔD = 4 / 10
+```
 
 ### Tolerance
-Twiddle incorporates a tolerance value as the hyperparameters are tuned, so the algorithm will know when it's finished.  After some tinkering, I ended up keeping the same 0.2 value as used in the lab.
+Twiddle incorporates a tolerance value as the hyperparameters are tuned, so the algorithm will know when it's finished.  After some tinkering, I ended up keeping the same **0.2** value as used in the lab.
 
-### Result
+# Results
 After much tinkering, my implementation runs well enough to get to 67 MPH and stays on the track.
 
 [Link to project video](https://youtu.be/qMOD0XqE0XQ)
 
 # Lessons Learned
 
-The twiddle logic requires the system to run and accumulate CTE to proceed to the next statement, so I had to record state information to reflect that.  A better approach would be to use a callback mechanism to initiate an accumulation/running timespan  
+The twiddle logic requires the system to run and accumulate CTE to proceed to the next statement, so I had to record state information to reflect that.  A better approach would be to use a callback mechanism to initiate an accumulation/running timespan.
+
+Created a tracker (show example)
+
+Twiddle runs should be based on laps
 
