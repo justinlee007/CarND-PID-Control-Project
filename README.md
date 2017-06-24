@@ -49,7 +49,7 @@ Implementing the PID controller was somewhat trivial because it was already done
 
 In the Udacity car simulator, the CTE value is read from the data message sent by the simulator, and the PID controller updates the error values and predicts the steering angle based on the total error.  This predicted steering angle is a correction of the updated error to the desired setpoint based on proportional, integral, and derivative terms (hence PID).
 
-![](pid.svg)
+![](pid.png)
 ##### PID Formula
 
 After the PID calculates the steering angle, a throttle value is derived and sent back to the simulator.  Once a new message is received, the new CTE value is used to start the process of update and prediction again.   
