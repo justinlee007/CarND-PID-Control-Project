@@ -61,14 +61,43 @@ The speed at which data messages are sent to the program is highly influenced by
 
 The bulk of the work I did for this project was in tuning the hyperparameters and developing the twiddle algorithm to automatically update them as the car drove around the track.
 
+## Manual Tuning
+
 I started out using some values supplied in the lecture:
-* P (Proportional) = 0.225
-* I (Integral) = 0.0004
-* D (Differential) = 4
+```
+P (Proportional) = 0.225
+I (Integral) = 0.0004
+D (Differential) = 4
+```
 
 I noticed that changing the integral param *even the slightest* would result in the car wildly oscillating back and forth.  The same would be for the proportional param -- small changes resulting in large oscillations and the car would often go off the track.  The differential value could be changed quite a bit before seeing much change.
 
-After some manual tinkering, I decided to apply the twiddle algorithm to update the parameters automatically.  I structured my implementation of the algorithm to methodically vary each of the parameters and measure the resulting difference in error to determine if increasing or decreasing the value was improving the overall CTE of the car's path.    
+## Twiddle Algorithm
+
+After some manual tinkering, I decided to apply the twiddle algorithm to update the parameters automatically.  I structured my implementation of the algorithm to methodically vary each of the parameters and measure the resulting difference in error to determine if increasing or decreasing the value was improving the overall CTE of the car's path.
+
+![](twiddle-pseudo.png)
+##### Twiddle Psuedocode
+
+The fundamental concept of twiddle is to refine input parameters based on an empirical feedback mechanism.  The algorithm boils down to:
+* Record the error before running
+* Change the parameter
+* Let the system run
+* Record the error again
+* Compare the two and chose the one with less error
+
+![](twiddle.png)
+##### Benefits of a PID controller implementing the twiddle algorithm
+
+Some details of the algorithm are as follows:
+### Parameter Deltas
+
+When twiddle runs in the Udacity car simulator, it updates the PID hyperparameters directly, and has an immediate affect on the car's performance.  Because changing the values too much can result in the car immediately flying off the track, I decided to use the seed PID values to drive parameter deltas.  After much tinkering, I decided that the param deltas would initialize to 10% of the seed value.  So even though the twiddle algorithm tunes hyperparameters to a smaller range, it allows for dynamic updates while the simulator is running. 
+
+### Tolerance
+Twiddle incorporates a tolerance value as the hyperparameters are tuned, so the algorithm will know when it's finished.  After some tinkering, I ended up keeping the same 0.2 value as used in the lab.
+
 
 # Other lessons learned
+
 
