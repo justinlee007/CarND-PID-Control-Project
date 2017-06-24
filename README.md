@@ -132,9 +132,16 @@ After much tinkering, my implementation runs well enough to get to 67 MPH and st
 
 # Lessons Learned
 
-The twiddle logic requires the system to run and accumulate CTE to proceed to the next statement, so I had to record state information to reflect that.  A better approach would be to use a callback mechanism to initiate an accumulation/running timespan.
+The twiddle logic requires the system to run and accumulate CTE to proceed to the next statement, so I had to record state information to reflect that.  A better approach would be to use a **callback mechanism** to initiate an accumulation/running timespan.
 
-Created a tracker (show example)
+Tracking all the data points throughout the process of developing the PID controller required a dedicated **Tracker class**.  This class collated all the pertinent data and reported it at the same time the twiddle class adjusted the hyperparameters, resulting in periodic output like the following:  
 
-Twiddle runs should be based on laps
+```
+ΔKp=0.01083, ΔKi=0.0000289, ΔKd=0.2406, tolerance=0.251
+Kp=0.1650, Ki=0.000440, Kd=3.300
+best_cte_=0.00000, worst_cte_=3.23950, ave_cte=0.52088
+best_speed_=60.81, ave_speed_=48.62, ave_throttle_=0.528, ave_tps_=71.2
+```
+
+Finally I think that the twiddle runs should be based on **laps**.  That way, the cumulative error for the entire lap could be used to twiddle the hyperparameters.  I think that might result in the highest accuracy for the twiddle tuning.  However, location data was not included nor was in the scope for this project.
 
