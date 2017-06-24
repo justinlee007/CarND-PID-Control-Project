@@ -57,7 +57,7 @@ After the PID calculates the steering angle, a throttle value is derived and sen
 The speed at which data messages are sent to the program is highly influenced by the resolution and graphics quality selected in the opening screen of the simulator.  Other factors include speed of the machine running the simulator, the OS and if other programs are competing for CPU/GPU usage.  This is important because I found that if the rate of messages coming into the program were too low, the car would not update fast enough.  It would start oscillating and, eventually, fly off the track.
 
 
-# Tuning the hyperparameters
+# Tuning the Hyperparameters
 
 The bulk of the work I did for this project was in tuning the hyperparameters and developing the twiddle algorithm to automatically update them as the car drove around the track.
 
@@ -97,7 +97,12 @@ When twiddle runs in the Udacity car simulator, it updates the PID hyperparamete
 ### Tolerance
 Twiddle incorporates a tolerance value as the hyperparameters are tuned, so the algorithm will know when it's finished.  After some tinkering, I ended up keeping the same 0.2 value as used in the lab.
 
+### Result
+After much tinkering, my implementation runs well enough to get to 67 MPH and stays on the track.
 
-# Other lessons learned
+[Link to project video](https://youtu.be/qMOD0XqE0XQ)
 
+# Lessons Learned
+
+The twiddle logic requires the system to run and accumulate CTE to proceed to the next statement, so I had to record state information to reflect that.  A better approach would be to use a callback mechanism to initiate an accumulation/running timespan  
 
