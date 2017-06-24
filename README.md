@@ -59,6 +59,22 @@ After the PID calculates the steering angle, a throttle value is derived and sen
 
 The speed at which data messages are sent to the program is highly influenced by the resolution and graphics quality selected in the opening screen of the simulator.  Other factors include speed of the machine running the simulator, the OS and if other programs are competing for CPU/GPU usage.  This is important because I found that if the rate of messages coming into the program were too low, the car would not update fast enough.  It would start oscillating and, eventually, fly off the track.
 
+# Throttle
+The other required output value for each data message is a throttle value from -1.0 to 1.0 where -1 is 100% reverse and 1 is 100% forward.  I decided to use the derived steering value to compute the throttle because:
+1) We want to go fast
+2) Going fast around corners or while oscillating toward the setpoint usually results in going off the track
+3) Going fast when the data message throughput is low also results in going off the track
+  
+So my throttle algorithm is:
+```
+if the steering angle is high
+    set throttle to 0.25
+else
+    set throttle to the inverse of the steering value (max 100) normalized to between 0.45 and 1.0
+    if the data message throughput rate is low
+        lower the throttle value by 0.2
+```
+I found that using this throttle logic kept the car on the track when oscillating or when the data message throughput was low and allowed for moderately high speeds. 
 
 # Tuning the Hyperparameters
 
