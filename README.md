@@ -50,9 +50,12 @@ Implementing the PID controller was somewhat trivial because it was already done
 In the Udacity car simulator, the CTE value is read from the data message sent by the simulator, and the PID controller updates the error values and predicts the steering angle based on the total error.  This predicted steering angle is a correction of the updated error to the desired setpoint based on proportional, integral, and derivative terms (hence PID).
 
 ![](pid.png)
-##### PID Formula
+##### PID Formula (image from Wikipedia)
 
 After the PID calculates the steering angle, a throttle value is derived and sent back to the simulator.  Once a new message is received, the new CTE value is used to start the process of update and prediction again.   
+
+![](pid-process.png)
+##### PID Process (image from Wikipedia)
 
 The speed at which data messages are sent to the program is highly influenced by the resolution and graphics quality selected in the opening screen of the simulator.  Other factors include speed of the machine running the simulator, the OS and if other programs are competing for CPU/GPU usage.  This is important because I found that if the rate of messages coming into the program were too low, the car would not update fast enough.  It would start oscillating and, eventually, fly off the track.
 
@@ -87,12 +90,15 @@ The fundamental concept of twiddle is to refine input parameters based on an emp
 * Compare the two and chose the one with less error
 
 ![](twiddle.png)
-##### Example illustration showing benefits of a PID controller implementing the twiddle algorithm
+##### Example illustration showing benefits of a PID controller implementing the twiddle algorithm (image from Wikipedia)
 
 Some details of the algorithm are as follows:
+### Sample Size
+The twiddle algorithm requires the system to have a constant run-rate to accurately guage the error between the parameter delta that is being tuned.  My first attempt at this included thousands of samples to try and equate total error to an entire lap around the track, but that ended up being slow and inaccurate.  Without location data, any attempt at gleaning track location is guesswork.  So I decided to use a **sample size of 100**. That means 100 measurements are made between each twiddle of a hyperparameter. 
+
 ### Parameter Deltas
 
-When twiddle runs in the Udacity car simulator, it updates the PID hyperparameters directly, and has an immediate affect on the car's performance.  Because changing the values too much can result in the car immediately flying off the track, I decided to use the seed PID values to drive parameter deltas.  After much tinkering, I decided that the param deltas would initialize to **10%** of the seed value.  So even though the twiddle algorithm tunes hyperparameters to a smaller range, it allows for dynamic updates while the simulator is running. 
+When twiddle runs in the Udacity car simulator, it updates the PID hyperparameters directly, and has an immediate affect on the car's performance.  Because changing the values too much can result in the car immediately flying off the track, I decided to use the seed PID values to drive parameter deltas.  After much tinkering, I decided that the param deltas would initialize to **10% of the seed value**.  So even though the twiddle algorithm tunes hyperparameters to a smaller range, it allows for dynamic updates while the simulator is running. 
 
 ```
 Delta P (Proportional) ΔP = 0.225 / 10
